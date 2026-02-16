@@ -40,6 +40,20 @@ app.get("/data", (req, res) => {
   res.send(readData());
 });
 
+// Preview endpoint: generates an LLM-based message without sending an email.
+// This route is used to test and preview the dynamic AI-generated message
+// instead of the old static email content. It reads optional query params
+// (name, recipientName), generates the message, and returns it as JSON
+// so developers can verify the output before triggering the actual email flow.
+app.get('/preview-message', async (req, res) => {
+  const name = req.query.name || 'Alex';
+  const recipientName = req.query.recipientName || 'Friend';
+  const birthdayPerson = { name };
+  const recipient = { name: recipientName };
+  const message = await generateBirthdayMessage(birthdayPerson, recipient);
+  res.json({ message });
+});
+
 app.post("/add-solo", (req, res) => {
   const data = readData();
   data.solo.push({
@@ -93,8 +107,30 @@ app.post("/delete-group-member", (req, res) => {
   res.send("Deleted");
 });
 
-// Local 'LLM-like' birthday message generator — randomized templates (no external API)
-function generateBirthdayMessage(name, mode = 'self') {
+// Local 'LLM-like' birthday message generator — supports two signatures:
+//  - generateBirthdayMessage(name, mode)
+//  - generateBirthdayMessage(birthdayPersonObj, recipientObj)
+function generateBirthdayMessage(nameOrObj, modeOrRecipient = 'self') {
+  // normalize inputs so existing calls remain compatible
+  let name = 'Friend';
+  let mode = 'self';
+
+  if (typeof nameOrObj === 'object' && nameOrObj !== null) {
+    const birthdayPerson = nameOrObj;
+    name = birthdayPerson.name || name;
+
+    if (typeof modeOrRecipient === 'object' && modeOrRecipient !== null) {
+      const recipient = modeOrRecipient;
+      // determine mode: if recipient is the same person, assume 'self', otherwise 'notify'
+      mode = recipient.name && recipient.name === birthdayPerson.name ? 'self' : 'notify';
+    } else {
+      mode = typeof modeOrRecipient === 'string' ? modeOrRecipient : 'self';
+    }
+  } else {
+    name = nameOrObj || name;
+    mode = typeof modeOrRecipient === 'string' ? modeOrRecipient : 'self';
+  }
+
   const variants = {
     self: [
       `Happy birthday, ${name}! Wishing you a wonderful day filled with joy 🎉`,
@@ -107,6 +143,7 @@ function generateBirthdayMessage(name, mode = 'self') {
       `${name} celebrates a birthday today — drop them a message 🎂`
     ]
   };
+
   const arr = variants[mode] || variants.self;
   return arr[Math.floor(Math.random() * arr.length)];
 }
