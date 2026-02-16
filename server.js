@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config(); // ✨ PR: tiny non-functional change
 
 const express = require("express");
 const fs = require("fs");
@@ -6,7 +6,7 @@ const nodemailer = require("nodemailer");
 const cron = require("node-cron");
 
 const app = express();
-const PORT = process.env.PORT||3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
@@ -63,52 +63,52 @@ app.post("/add-group", (req, res) => {
 });
 
 app.post("/save-all", (req, res) => {
-    fs.writeFileSync("members.json", JSON.stringify(req.body, null, 2));
-    res.send("updated");
+  fs.writeFileSync("members.json", JSON.stringify(req.body, null, 2));
+  res.send("updated");
 });
 
 
 app.post("/delete-solo", (req, res) => {
-    const data = readData();
-    data.solo.splice(req.body.index, 1);
-    saveData(data);
-    res.send("Deleted");
+  const data = readData();
+  data.solo.splice(req.body.index, 1);
+  saveData(data);
+  res.send("Deleted");
 });
 
 // Delete group
 app.post("/delete-group", (req, res) => {
-    const data = readData();
-    data.groups.splice(req.body.index, 1);
-    saveData(data);
-    res.send("Deleted");
+  const data = readData();
+  data.groups.splice(req.body.index, 1);
+  saveData(data);
+  res.send("Deleted");
 });
 
 // Delete group member
 app.post("/delete-group-member", (req, res) => {
-    const data = readData();
-    const gIndex = req.body.gIndex;
-    const mIndex = req.body.mIndex;
-    data.groups[gIndex].members.splice(mIndex, 1);
-    saveData(data);
-    res.send("Deleted");
+  const data = readData();
+  const gIndex = req.body.gIndex;
+  const mIndex = req.body.mIndex;
+  data.groups[gIndex].members.splice(mIndex, 1);
+  saveData(data);
+  res.send("Deleted");
 });
 
 // ===== BIRTHDAY EMAILS =====
 function sendBirthdayEmails() {
   const data = readData();
   const today = new Date();
-  const todayStr = `${today.getMonth()+1}-${today.getDate()}`;
+  const todayStr = `${today.getMonth() + 1}-${today.getDate()}`;
 
   // solo members
   data.solo.forEach(member => {
     const bday = new Date(member.birthday);
-    const bdayStr = `${bday.getMonth()+1}-${bday.getDate()}`;
+    const bdayStr = `${bday.getMonth() + 1}-${bday.getDate()}`;
     if (bdayStr === todayStr) {
       transporter.sendMail({
         from: "yourgmail@gmail.com",
         to: member.email,
-        subject:"Birthday Reminder 🎉🎂",
-        text:`Today is ${member.name}'s birthday 🎂 send your wishes🥂🥳`
+        subject: "Birthday Reminder 🎉🎂",
+        text: `Today is ${member.name}'s birthday 🎂 send your wishes🥂🥳`
       });
     }
   });
@@ -117,10 +117,10 @@ function sendBirthdayEmails() {
   data.groups.forEach(group => {
     group.members.forEach(birthdayMember => {
       const bday = new Date(birthdayMember.birthday);
-      const bdayStr = `${bday.getMonth()+1}-${bday.getDate()}`;
+      const bdayStr = `${bday.getMonth() + 1}-${bday.getDate()}`;
       if (bdayStr === todayStr) {
         group.members.forEach(other => {
-          if(other.email !== birthdayMember.email){
+          if (other.email !== birthdayMember.email) {
             transporter.sendMail({
               from: "yourgmail@gmail.com",
               to: other.email,
