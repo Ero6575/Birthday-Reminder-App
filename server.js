@@ -125,7 +125,7 @@ function sendBirthdayEmails() {
               from: "yourgmail@gmail.com",
               to: other.email,
               subject: "Birthday Reminder 🎉🎂",
-              text: `Today is ${birthdayMember.name}'s birthday 🎂!`
+              text: `Today is ${birthdayMember.name}'s birthday 🎂! 🎉`
             });
           }
         });
